@@ -1,0 +1,31 @@
+{
+  "name": "twister",
+  "version": "1.0.0",
+  "description": "Simple twister companion app",
+  "main": "index.js",
+  "scripts": {
+    "build": "browserify ./src/index.js -o ./public/bundle.js",
+	"start": "watchify -p [ browserify-livereload --host 127.0.0.1 --port 1337 ] ./src/index.js -o ./public/bundle.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jakubrwisniewski/twister.git"
+  },
+  "keywords": [
+    "twister",
+    "game"
+  ],
+  "author": "Jakub Wiśniewski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jakubrwisniewski/twister/issues"
+  },
+  "homepage": "https://github.com/jakubrwisniewski/twister#readme",
+  "devDependencies": {
+    "browserify": "^17.0.0",
+    "browserify-livereload": "^1.0.10",
+    "eslint": "^8.6.0",
+    "jest": "^27.4.5",
+    "watchify": "^4.0.0"
+  }
+}
