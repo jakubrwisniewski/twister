@@ -1,4 +1,4 @@
-const { initializeUi } = require("./dom");
+const { initializeUi, updateColor, updatePart } = require("./dom");
 const store = require("./store");
 const engine = require('./engine');
 
@@ -17,7 +17,14 @@ const onStart = () => {
 
 const onStop = () => {
 	engine.stop();
+	updateColor('', '');
+	updatePart('');
 };
+
+engine.addUpdateEventListener((partText, colorText, colorName) => {
+	updateColor(colorText, colorName);
+	updatePart(partText);
+});
 
 initializeUi({
 	onLanguageChange,

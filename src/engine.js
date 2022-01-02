@@ -4,18 +4,34 @@ const store = require("./store");
 const { getRandom, talk } = require("./utils");
 
 let intervalObject;
+let onUpdate;
 
 const tick = () => {
 	const colorName = ColorName[getRandom()];
 	const part = Part[getRandom()];
 
 	const lang = getLang();
-	const text = `${lang.parts[part]} ${lang.on} ${lang.colors[colorName]}`;
+
+	const partText = lang.parts[part];
+	const colorText = lang.colors[colorName];
+
+	const text = `${partText} ${lang.on} ${colorText}`;
 
 	talk(text);
+
+	if(onUpdate) {
+		onUpdate(
+			partText,
+			colorText,
+			colorName
+		);
+	}
 };
 
 const start = () => {
+	if(intervalObject) {
+		stop();
+	}
 	intervalObject = setInterval(tick, store.get('time') * 1000);
 };
 
@@ -30,8 +46,13 @@ const updateTime = () => {
 	}
 };
 
+const addUpdateEventListener = (callback) => {
+	onUpdate = callback;
+};
+
 module.exports = {
 	start,
 	stop,
-	updateTime
+	updateTime,
+	addUpdateEventListener
 };

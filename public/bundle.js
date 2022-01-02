@@ -24,10 +24,10 @@ const ColorName = {
 };
 
 const Color = {
-	blue: '',
+	blue: '#00a',
 	green: '#0a0',
 	red: '#d00',
-	yellow: ''
+	yellow: '#fa0'
 }
 
 const Part = {
@@ -45,6 +45,10 @@ module.exports = {
 };
 
 },{}],2:[function(require,module,exports){
+const { DefaultLang } = require("./constants");
+const store = require("./store");
+const { removeClassFromNodeList } = require("./utils");
+
 const initializeUi = ({
 	onLanguageChange,
 	onTimeChange,
@@ -52,53 +56,104 @@ const initializeUi = ({
 	onStop
 }) => {
 
-	document.querySelectorAll("#lang button").forEach((button) => {
+	const lang = store.get('lang') || DefaultLang;
+	document.querySelector(`#lang button[value="${lang}"]`).classList.add('active');
+
+	const time = store.get('time') || 3;
+	document.querySelector(`#time button[value="${time}"]`).classList.add('active');
+
+	const langButtons = document.querySelectorAll("#lang button");
+	const timeButtons = document.querySelectorAll('#time button');
+
+	langButtons.forEach((button) => {
 		button.addEventListener('click', (event) => {
 			const { value } = event.currentTarget;
 			onLanguageChange(value);
+			removeClassFromNodeList(langButtons, 'active');
+			event.currentTarget.classList.add('active');
 		});
 	});
 
-	document.querySelectorAll('#time button').forEach((button) => {
+	timeButtons.forEach((button) => {
 		button.addEventListener('click', (event) => {
 			const { value } = event.currentTarget;
 			onTimeChange(value);
+			removeClassFromNodeList(timeButtons, 'active');
+			event.currentTarget.classList.add('active');
 		});
 	});
 
-	document.querySelector("#start").addEventListener('click', (event) => {
+	const startButton = document.querySelector("#start");
+	const stopButton = document.querySelector("#stop");
+
+	startButton.addEventListener('click', () => {
+		stopButton.style.display = 'inline-block';
+		startButton.style.display = 'none';
 		onStart();
 	});
 
-	document.querySelector("#stop").addEventListener('click', (event) => {
+	stopButton.addEventListener('click', () => {
+		startButton.style.display = 'inline-block';
+		stopButton.style.display = 'none';
 		onStop();
 	});
 
+	startButton.style.display = 'inline-block';
+	stopButton.style.display = 'none';
+};
+
+const partNode = document.getElementById('part');
+const updatePart = (text) => {
+	partNode.innerText = text;
+};
+
+const colorNode = document.getElementById('color');
+const updateColor = (text, color) => {
+	colorNode.innerText = text;
+	colorNode.style.color = color;
 };
 
 module.exports = {
-	initializeUi
+	initializeUi,
+	updatePart,
+	updateColor,
 };
 
-},{}],3:[function(require,module,exports){
+},{"./constants":1,"./store":8,"./utils":9}],3:[function(require,module,exports){
 const { ColorName, Part } = require("./constants");
 const { getLang } = require("./lang");
 const store = require("./store");
 const { getRandom, talk } = require("./utils");
 
 let intervalObject;
+let onUpdate;
 
 const tick = () => {
 	const colorName = ColorName[getRandom()];
 	const part = Part[getRandom()];
 
 	const lang = getLang();
-	const text = `${lang.parts[part]} ${lang.on} ${lang.colors[colorName]}`;
+
+	const partText = lang.parts[part];
+	const colorText = lang.colors[colorName];
+
+	const text = `${partText} ${lang.on} ${colorText}`;
 
 	talk(text);
+
+	if(onUpdate) {
+		onUpdate(
+			partText,
+			colorText,
+			colorName
+		);
+	}
 };
 
 const start = () => {
+	if(intervalObject) {
+		stop();
+	}
 	intervalObject = setInterval(tick, store.get('time') * 1000);
 };
 
@@ -113,10 +168,15 @@ const updateTime = () => {
 	}
 };
 
+const addUpdateEventListener = (callback) => {
+	onUpdate = callback;
+};
+
 module.exports = {
 	start,
 	stop,
-	updateTime
+	updateTime,
+	addUpdateEventListener
 };
 
 },{"./constants":1,"./lang":7,"./store":8,"./utils":9}],4:[function(require,module,exports){
@@ -126,7 +186,7 @@ module.exports = {
 		blue: 'blue',
 		green: 'green',
 		yellow: 'yellow',
-		blue: 'blue'
+		red: 'red'
 	},
 	parts: {
 		rf: 'right foot',
@@ -143,7 +203,7 @@ module.exports = {
 		blue: 'niebieski',
 		green: 'zielony',
 		yellow: 'żółty',
-		blue: 'niebieski'
+		red: 'czerwony'
 	},
 	parts: {
 		rf: 'prawa noga',
@@ -154,7 +214,7 @@ module.exports = {
 }
 
 },{}],6:[function(require,module,exports){
-const { initializeUi } = require("./dom");
+const { initializeUi, updateColor, updatePart } = require("./dom");
 const store = require("./store");
 const engine = require('./engine');
 
@@ -173,7 +233,14 @@ const onStart = () => {
 
 const onStop = () => {
 	engine.stop();
+	updateColor('', '');
+	updatePart('');
 };
+
+engine.addUpdateEventListener((partText, colorText, colorName) => {
+	updateColor(colorText, colorName);
+	updatePart(partText);
+});
 
 initializeUi({
 	onLanguageChange,
@@ -221,9 +288,14 @@ const getRandom = () => {
 	return Math.round(Math.random() * 10) % 4;
 };
 
+const removeClassFromNodeList = (list, className) => {
+	list.forEach(element => element.classList.remove(className));
+}
+
 module.exports = {
 	talk,
-	getRandom
+	getRandom,
+	removeClassFromNodeList
 };
 
 },{}]},{},[6]);

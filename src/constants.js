@@ -8,10 +8,10 @@ const ColorName = {
 };
 
 const Color = {
-	blue: '',
+	blue: '#00a',
 	green: '#0a0',
 	red: '#d00',
-	yellow: ''
+	yellow: '#fa0'
 }
 
 const Part = {

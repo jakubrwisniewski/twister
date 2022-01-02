@@ -1,3 +1,7 @@
+const { DefaultLang } = require("./constants");
+const store = require("./store");
+const { removeClassFromNodeList } = require("./utils");
+
 const initializeUi = ({
 	onLanguageChange,
 	onTimeChange,
@@ -5,30 +9,65 @@ const initializeUi = ({
 	onStop
 }) => {
 
-	document.querySelectorAll("#lang button").forEach((button) => {
+	const lang = store.get('lang') || DefaultLang;
+	document.querySelector(`#lang button[value="${lang}"]`).classList.add('active');
+
+	const time = store.get('time') || 3;
+	document.querySelector(`#time button[value="${time}"]`).classList.add('active');
+
+	const langButtons = document.querySelectorAll("#lang button");
+	const timeButtons = document.querySelectorAll('#time button');
+
+	langButtons.forEach((button) => {
 		button.addEventListener('click', (event) => {
 			const { value } = event.currentTarget;
 			onLanguageChange(value);
+			removeClassFromNodeList(langButtons, 'active');
+			event.currentTarget.classList.add('active');
 		});
 	});
 
-	document.querySelectorAll('#time button').forEach((button) => {
+	timeButtons.forEach((button) => {
 		button.addEventListener('click', (event) => {
 			const { value } = event.currentTarget;
 			onTimeChange(value);
+			removeClassFromNodeList(timeButtons, 'active');
+			event.currentTarget.classList.add('active');
 		});
 	});
 
-	document.querySelector("#start").addEventListener('click', (event) => {
+	const startButton = document.querySelector("#start");
+	const stopButton = document.querySelector("#stop");
+
+	startButton.addEventListener('click', () => {
+		stopButton.style.display = 'inline-block';
+		startButton.style.display = 'none';
 		onStart();
 	});
 
-	document.querySelector("#stop").addEventListener('click', (event) => {
+	stopButton.addEventListener('click', () => {
+		startButton.style.display = 'inline-block';
+		stopButton.style.display = 'none';
 		onStop();
 	});
 
+	startButton.style.display = 'inline-block';
+	stopButton.style.display = 'none';
+};
+
+const partNode = document.getElementById('part');
+const updatePart = (text) => {
+	partNode.innerText = text;
+};
+
+const colorNode = document.getElementById('color');
+const updateColor = (text, color) => {
+	colorNode.innerText = text;
+	colorNode.style.color = color;
 };
 
 module.exports = {
-	initializeUi
+	initializeUi,
+	updatePart,
+	updateColor,
 };

@@ -4,7 +4,7 @@ module.exports = {
 		blue: 'blue',
 		green: 'green',
 		yellow: 'yellow',
-		blue: 'blue'
+		red: 'red'
 	},
 	parts: {
 		rf: 'right foot',
